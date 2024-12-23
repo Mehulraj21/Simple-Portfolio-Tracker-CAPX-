@@ -1,0 +1,228 @@
+Frontend: React Application
+1. Setup
+Use create-react-app to initialize a React project:
+
+bash
+Copy code
+npx create-react-app portfolio-tracker
+cd portfolio-tracker
+npm install axios react-router-dom chart.js react-chartjs-2 bootstrap
+2. App Structure
+Components: Dashboard, StockForm, StockList.
+Routing: Use react-router-dom for navigation.
+Code for Frontend
+App.js:
+
+javascript
+Copy code
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import Dashboard from './components/Dashboard';
+import StockForm from './components/StockForm';
+import StockList from './components/StockList';
+
+const App = () => (
+  <Router>
+    <div className="container mt-5">
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/add-stock" element={<StockForm />} />
+        <Route path="/stocks" element={<StockList />} />
+      </Routes>
+    </div>
+  </Router>
+);
+
+export default App;
+Dashboard.js:
+
+javascript
+Copy code
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { Pie } from 'react-chartjs-2';
+
+const Dashboard = () => {
+  const [metrics, setMetrics] = useState(null);
+
+  useEffect(() => {
+    axios.get('https://your-backend-url/api/portfolio/metrics')
+      .then(response => setMetrics(response.data))
+      .catch(error => console.error(error));
+  }, []);
+
+  if (!metrics) return <div>Loading...</div>;
+
+  const distributionData = {
+    labels: Object.keys(metrics.portfolio_distribution),
+    datasets: [
+      {
+        data: Object.values(metrics.portfolio_distribution),
+        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4CAF50', '#FFC107'],
+      },
+    ],
+  };
+
+  return (
+    <div>
+      <h1>Portfolio Dashboard</h1>
+      <p>Total Portfolio Value: ${metrics.total_value.toFixed(2)}</p>
+      <p>Top Performing Stock: {metrics.top_performing_stock.symbol}</p>
+      <Pie data={distributionData} />
+    </div>
+  );
+};
+
+export default Dashboard;
+StockForm.js:
+
+javascript
+Copy code
+import React, { useState } from 'react';
+import axios from 'axios';
+
+const StockForm = () => {
+  const [formData, setFormData] = useState({ stock_name: '', ticker: '', quantity: 1, buy_price: '' });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    axios.post('https://your-backend-url/api/stocks', formData)
+      .then(() => alert('Stock added successfully!'))
+      .catch(error => console.error(error));
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input type="text" placeholder="Stock Name" value={formData.stock_name} onChange={(e) => setFormData({ ...formData, stock_name: e.target.value })} />
+      <input type="text" placeholder="Ticker" value={formData.ticker} onChange={(e) => setFormData({ ...formData, ticker: e.target.value })} />
+      <input type="number" placeholder="Buy Price" value={formData.buy_price} onChange={(e) => setFormData({ ...formData, buy_price: e.target.value })} />
+      <button type="submit">Add Stock</button>
+    </form>
+  );
+};
+
+export default StockForm;
+StockList.js:
+
+javascript
+Copy code
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+
+const StockList = () => {
+  const [stocks, setStocks] = useState([]);
+
+  useEffect(() => {
+    axios.get('https://your-backend-url/api/stocks')
+      .then(response => setStocks(response.data))
+      .catch(error => console.error(error));
+  }, []);
+
+  const handleDelete = (id) => {
+    axios.delete(`https://your-backend-url/api/stocks/${id}`)
+      .then(() => setStocks(stocks.filter(stock => stock.id !== id)))
+      .catch(error => console.error(error));
+  };
+
+  return (
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Ticker</th>
+          <th>Quantity</th>
+          <th>Buy Price</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {stocks.map(stock => (
+          <tr key={stock.id}>
+            <td>{stock.stock_name}</td>
+            <td>{stock.ticker}</td>
+            <td>{stock.quantity}</td>
+            <td>${stock.buy_price}</td>
+            <td>
+              <button onClick={() => handleDelete(stock.id)}>Delete</button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+};
+
+export default StockList;
+Backend: Spring Boot Application
+1. Setup
+Use Spring Boot Initializer: Add dependencies for Spring Web, JPA, MySQL, and Lombok.
+Code for Backend
+Stock.java:
+
+java
+Copy code
+@Entity
+public class Stock {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String stockName;
+    private String ticker;
+    private int quantity = 1;
+    private BigDecimal buyPrice;
+
+    // Getters and Setters
+}
+StockRepository.java:
+
+java
+Copy code
+@Repository
+public interface StockRepository extends JpaRepository<Stock, Long> {}
+StockService.java:
+
+java
+Copy code
+@Service
+public class StockService {
+    @Autowired
+    private StockRepository repository;
+
+    public List<Stock> getAllStocks() {
+        return repository.findAll();
+    }
+
+    public Stock saveStock(Stock stock) {
+        return repository.save(stock);
+    }
+
+    public void deleteStock(Long id) {
+        repository.deleteById(id);
+    }
+}
+StockController.java:
+
+java
+Copy code
+@RestController
+@RequestMapping("/api/stocks")
+public class StockController {
+    @Autowired
+    private StockService service;
+
+    @GetMapping
+    public List<Stock> getAllStocks() {
+        return service.getAllStocks();
+    }
+
+    @PostMapping
+    public Stock addStock(@RequestBody Stock stock) {
+        return service.saveStock(stock);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteStock(@PathVariable Long id) {
+        service.deleteStock(id);
+    }
+}
