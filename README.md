@@ -19,3 +19,7 @@ Portfolio distribution.
 # Frontend: React Application
 1. Setup
 Use create-react-app to initialize a React project:
+
+# App Structure
+Components: Dashboard, StockForm, StockList.
+Routing: Use react-router-dom for navigation
