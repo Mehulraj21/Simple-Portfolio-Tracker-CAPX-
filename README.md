@@ -16,6 +16,6 @@ Top-performing stock.
 Portfolio distribution.
 
 
-Frontend: React Application
+# Frontend: React Application
 1. Setup
 Use create-react-app to initialize a React project:
