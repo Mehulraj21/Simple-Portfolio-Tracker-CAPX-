@@ -14,3 +14,8 @@ Endpoint /api/portfolio/metrics provides:
 Total portfolio value.
 Top-performing stock.
 Portfolio distribution.
+
+
+Frontend: React Application
+1. Setup
+Use create-react-app to initialize a React project:
