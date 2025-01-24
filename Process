@@ -1,0 +1,124 @@
+#Process
+Frontend (React)
+Setup
+
+Create a React application using create-react-app or Vite.
+Install libraries for UI and HTTP requests:
+bash
+Copy
+Edit
+npm install axios react-router-dom material-ui
+Components
+
+Dashboard: Displays portfolio metrics:
+Total Portfolio Value
+Top Performing Stock
+Portfolio Distribution (Pie Chart via chart.js or recharts).
+Form: To add or edit stock details (name, ticker, quantity, buy price).
+Table/List: Shows stock holdings with options to edit or delete entries.
+API Integration
+
+Use Axios to fetch data from the backend (RESTful APIs).
+Handle CRUD operations:
+Add stock: POST /api/stocks.
+Edit stock: PUT /api/stocks/:id.
+Delete stock: DELETE /api/stocks/:id.
+Fetch all stocks: GET /api/stocks.
+Real-Time Prices
+
+Call stock price API (e.g., Alpha Vantage or Finnhub) to fetch live prices.
+Dynamically update the portfolio value.
+Styling
+
+Use Material-UI or TailwindCSS for responsive design and a polished look.
+Ensure the UI adapts to mobile and desktop views.
+Backend (Java Spring Boot)
+Setup
+
+Initialize a Spring Boot project (via Spring Initializr). Include dependencies:
+Spring Web
+Spring Data JPA
+MySQL Driver
+Spring Boot DevTools
+Entities
+
+Stock:
+java
+Copy
+Edit
+@Entity
+public class Stock {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String name;
+    private String ticker;
+    private Integer quantity;
+    private Double buyPrice;
+}
+Repositories
+
+Create a JPA repository for database interaction:
+java
+Copy
+Edit
+public interface StockRepository extends JpaRepository<Stock, Long> {}
+Services
+
+Write a service layer for business logic (e.g., calculating portfolio value, fetching API prices).
+Use RestTemplate or WebClient for integrating with stock price APIs.
+Controllers
+
+Expose RESTful APIs for CRUD operations:
+java
+Copy
+Edit
+@RestController
+@RequestMapping("/api/stocks")
+public class StockController {
+    // CRUD methods here
+}
+Exception Handling
+
+Implement global exception handling using @ControllerAdvice.
+Database
+
+Design schema in MySQL:
+sql
+Copy
+Edit
+CREATE TABLE stock (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50),
+    ticker VARCHAR(10),
+    quantity INT,
+    buy_price DOUBLE
+);
+Real-Time Data Integration
+Use Alpha Vantage or Finnhub API for stock prices.
+
+Register for a free API key.
+Fetch prices using endpoints like:
+plaintext
+Copy
+Edit
+https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=MSFT&apikey=YOUR_API_KEY
+Parse JSON response to retrieve current prices.
+Store these live prices temporarily for calculation.
+
+Deployment
+Backend
+
+Deploy the Spring Boot app on Heroku or AWS Elastic Beanstalk.
+Use MySQL (AWS RDS or JawsDB for Heroku) for the database.
+Frontend
+
+Deploy the React app on Vercel or Netlify.
+Configure the backend API URL in the React environment variables.
+Evaluation Tips
+Code Quality:
+Follow clean architecture principles (Controller → Service → Repository).
+Write comments and maintain modular code.
+UI/UX:
+Focus on simplicity and usability.
+Test responsiveness across devices.
